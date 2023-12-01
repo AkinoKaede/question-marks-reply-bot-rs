@@ -17,14 +17,14 @@ impl Chat {
         self.text.insert(id.to_le_bytes(), &probability.to_le_bytes()).expect("Failed to set probability for text.");
     }
 
-    pub(crate) fn get_probability_for_text(&self, id: i64) -> f64 {
+    pub(crate) fn get_probability_for_text(&self, id: i64) -> Option<f64> {
         if let Some(res) = self.text.get(id.to_le_bytes()).unwrap() {
             let probability = res.to_vec();
             let probability: [u8; 8] = (&probability[..]).try_into().unwrap();
-            return f64::from_le_bytes(probability);
+            return Some(f64::from_le_bytes(probability));
         }
 
-        1f64
+        None
     }
 
     pub(crate) fn set_probability_for_sticker(&self, id: i64, probability: f64) {
@@ -32,13 +32,13 @@ impl Chat {
         self.sticker.insert(id.to_le_bytes(), &probability.to_le_bytes()).expect("Failed to set probability for sticker.");
     }
 
-    pub(crate) fn get_probability_for_sticker(&self, id: i64) -> f64 {
+    pub(crate) fn get_probability_for_sticker(&self, id: i64) -> Option<f64> {
         if let Some(res) = self.sticker.get(id.to_le_bytes()).unwrap() {
             let probability = res.to_vec();
             let probability: [u8; 8] = (&probability[..]).try_into().unwrap();
-            return f64::from_le_bytes(probability);
+            return Some(f64::from_le_bytes(probability));
         }
 
-        1f64
+        None
     }
 }
