@@ -1,8 +1,9 @@
 use clap::Parser;
-use teloxide::{prelude::*, RequestError, update_listeners::webhooks};
-use teloxide::types::{MediaKind, MediaSticker, MediaText, MessageCommon, MessageKind};
+use teloxide::{prelude::*, update_listeners::webhooks};
+use teloxide::types::MessageCommon;
 
 mod question_mark_reply;
+mod handlers;
 
 #[derive(Parser)]
 #[command(name = "question-marks-reply-bot-rs")]
@@ -50,27 +51,11 @@ async fn main() {
 
     match listener {
         Some(listener) => {
-            teloxide::repl_with_listener(bot, message_handler, listener).await
+            teloxide::repl_with_listener(bot, handlers::message::message_handler, listener).await
         }
         None => {
-            teloxide::repl(bot, message_handler).await
+            teloxide::repl(bot, handlers::message::message_handler).await
         }
     }
 }
 
-async fn message_handler(bot: Bot, msg: Message) -> Result<(), RequestError> {
-    match msg.kind {
-        MessageKind::Common(
-            MessageCommon {
-                media_kind: MediaKind::Text(MediaText { .. }),
-                ..
-            }) => Ok(question_mark_reply::on_text::on_text(bot, msg).await?),
-        MessageKind::Common(
-            MessageCommon {
-                media_kind: MediaKind::Sticker(MediaSticker { .. }),
-                ..
-            }
-        ) => Ok(question_mark_reply::on_sticker::on_sticker(bot, msg).await?),
-        _ => Ok(()),
-    }
-}
