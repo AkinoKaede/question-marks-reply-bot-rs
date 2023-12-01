@@ -1,8 +1,13 @@
+use std::path::PathBuf;
+
 use clap::Parser;
+use sea_orm::Database;
 use teloxide::{prelude::*, update_listeners::webhooks};
-use teloxide::types::MessageCommon;
+
+use crate::handlers::{command, message};
 
 mod question_mark_reply;
+mod entities;
 mod handlers;
 
 #[derive(Parser)]
@@ -18,6 +23,9 @@ struct Cli {
 
     #[arg(short, long)]
     url: Option<String>,
+
+    #[arg(short, long)]
+    db_file: Option<PathBuf>,
 }
 
 #[tokio::main]
@@ -26,6 +34,23 @@ async fn main() {
 
     pretty_env_logger::init();
     log::info!("Starting question marks reply bot...");
+
+
+    let db_path = match cli.db_file {
+        Some(db_path) => db_path,
+        None => {
+            let xdg_dirs = xdg::BaseDirectories::with_prefix("question-marks-reply-bot-rs")
+                .expect("Failed to get XDG directories");
+
+            xdg_dirs
+                .place_data_file("database.sqlite")
+                .expect("Failed to create configuration directory")
+        }
+    };
+
+    let db = Database::connect(format!("sqlite://{}?mode=rwc",
+                                       db_path.to_string_lossy())).await.expect("Database cannot connect");
+
 
     let bot = match cli.token {
         Some(token) => Bot::new(token),
@@ -49,12 +74,22 @@ async fn main() {
     };
 
 
+    let handler = dptree::entry()
+        .branch(Update::filter_message()
+                .filter_command::<command::Command>()
+                .endpoint(command::command_handler))
+        .branch(Update::filter_message().endpoint(message::message_handler));
+
+
+    let mut dispatcher = Dispatcher::builder(bot, handler).enable_ctrlc_handler().build();
+
     match listener {
         Some(listener) => {
-            teloxide::repl_with_listener(bot, handlers::message::message_handler, listener).await
+            dispatcher.dispatch_with_listener(listener,
+                                              LoggingErrorHandler::with_custom_text("An error from the update listener")).await;
         }
         None => {
-            teloxide::repl(bot, handlers::message::message_handler).await
+            dispatcher.dispatch().await;
         }
     }
 }

@@ -1,6 +1,7 @@
+use std::fmt::Debug;
 use teloxide::{Bot, RequestError};
 use teloxide::prelude::Message;
-use teloxide::types::{MessageCommon, MediaKind, MediaSticker, MediaText, MessageKind};
+use teloxide::types::{MediaKind, MediaSticker, MediaText, MessageCommon, MessageKind};
 use crate::question_mark_reply;
 
 pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), RequestError> {
