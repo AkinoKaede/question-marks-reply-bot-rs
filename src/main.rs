@@ -38,7 +38,7 @@ async fn main() {
 
 
     let data_dir = match cli.data_dir {
-        Some(db_path) => db_path,
+        Some(db_path) => PathBuf::from(db_path).join("database.sled/"),
         None => {
             let xdg_dirs = xdg::BaseDirectories::with_prefix("question-marks-reply-bot-rs")
                 .expect("Failed to get XDG directories");
