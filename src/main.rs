@@ -1,14 +1,14 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use sea_orm::Database;
 use teloxide::{prelude::*, update_listeners::webhooks};
 
+use crate::database::init;
 use crate::handlers::{command, message};
 
 mod question_mark_reply;
-mod entities;
 mod handlers;
+mod database;
 
 #[derive(Parser)]
 #[command(name = "question-marks-reply-bot-rs")]
@@ -25,8 +25,9 @@ struct Cli {
     url: Option<String>,
 
     #[arg(short, long)]
-    db_file: Option<PathBuf>,
+    data_dir: Option<PathBuf>,
 }
+
 
 #[tokio::main]
 async fn main() {
@@ -36,21 +37,19 @@ async fn main() {
     log::info!("Starting question marks reply bot...");
 
 
-    let db_path = match cli.db_file {
+    let data_dir = match cli.data_dir {
         Some(db_path) => db_path,
         None => {
             let xdg_dirs = xdg::BaseDirectories::with_prefix("question-marks-reply-bot-rs")
                 .expect("Failed to get XDG directories");
 
             xdg_dirs
-                .place_data_file("database.sqlite")
+                .create_data_directory("database.sled/")
                 .expect("Failed to create configuration directory")
         }
     };
 
-    let db = Database::connect(format!("sqlite://{}?mode=rwc",
-                                       db_path.to_string_lossy())).await.expect("Database cannot connect");
-
+    init(data_dir).await;
 
     let bot = match cli.token {
         Some(token) => Bot::new(token),
@@ -76,8 +75,8 @@ async fn main() {
 
     let handler = dptree::entry()
         .branch(Update::filter_message()
-                .filter_command::<command::Command>()
-                .endpoint(command::command_handler))
+            .filter_command::<command::Command>()
+            .endpoint(command::command_handler))
         .branch(Update::filter_message().endpoint(message::message_handler));
 
 
