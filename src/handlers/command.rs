@@ -44,52 +44,14 @@ pub(crate) async fn command_handler(bot: Bot, msg: Message, cmd: Command) -> Res
             reply_to_message(&bot, &msg, "Disabled for you.").await?;
         }
         Command::SetProbabilityForText(probability) => {
-            if msg.chat.is_group() || msg.chat.is_supergroup() {
-                if probability <= 1f64 {
-                    let chat = Chat::new(db);
-                    match is_user_administrator_for_chat(&bot, &msg.chat.id, &msg.from().unwrap().id).await {
-                        Ok(true) => {
-                            chat.set_probability_for_text(msg.chat.id.0, probability);
-                            reply_to_message(&bot, &msg, format!("Succeed to set probability to {}.", probability)).await?;
-                        }
-                        Ok(false) => {
-                            reply_to_message(&bot, &msg, "You are not administrator.").await?;
-                        }
-                        Err(err) => {
-                            reply_to_message(&bot, &msg, "Failed to set probability.").await?;
-                            log::error!("Failed to get administrators: {:?}", err);
-                        }
-                    }
-                } else {
-                    reply_to_message(&bot, &msg, "Probability should between 0 and 1.").await?;
-                }
-            } else {
-                reply_to_message(&bot, &msg, "Cannot set probability in Private Chat.").await?;
-            }
+            let chat = Chat::new(db);
+            set_probability(&bot, &msg, probability,
+                            |p| chat.set_probability_for_text(msg.chat.id.0, p)).await?;
         }
         Command::SetProbabilityForSticker(probability) => {
-            if msg.chat.is_group() || msg.chat.is_supergroup() {
-                if probability <= 1f64 {
-                    let chat = Chat::new(db);
-                    match is_user_administrator_for_chat(&bot, &msg.chat.id, &msg.from().unwrap().id).await {
-                        Ok(true) => {
-                            chat.set_probability_for_sticker(msg.chat.id.0, probability);
-                            reply_to_message(&bot, &msg, format!("Succeed to set probability to {}.", probability)).await?;
-                        }
-                        Ok(false) => {
-                            reply_to_message(&bot, &msg, "You are not administrator.").await?;
-                        }
-                        Err(err) => {
-                            reply_to_message(&bot, &msg, "Failed to set probability.").await?;
-                            log::error!("Failed to get administrators: {:?}", err);
-                        }
-                    }
-                } else {
-                    reply_to_message(&bot, &msg, "Probability should between 0 and 1.").await?;
-                }
-            } else {
-                reply_to_message(&bot, &msg, "Cannot set probability in Private Chat.").await?;
-            }
+            let chat = Chat::new(db);
+            set_probability(&bot, &msg, probability,
+                            |p| chat.set_probability_for_sticker(msg.chat.id.0, p)).await?;
         }
     }
 
@@ -110,4 +72,30 @@ async fn is_user_administrator_for_chat(bot: &Bot, chat_id: &ChatId, user_id: &U
     let ids = admins.iter().map(|m| m.user.id).collect::<Vec<UserId>>();
 
     Ok(ids.iter().any(|i| i == user_id))
+}
+
+async fn set_probability<F>(bot: &Bot, msg: &Message, probability: f64, function: F) -> Result<(), RequestError>
+    where F: Fn(f64) -> ()
+{
+    Ok(if msg.chat.is_group() || msg.chat.is_supergroup() {
+        if probability <= 1f64 {
+            match is_user_administrator_for_chat(bot, &msg.chat.id, &msg.from().unwrap().id).await {
+                Ok(true) => {
+                    function(probability);
+                    reply_to_message(bot, msg, format!("Succeed to set probability to {}.", probability)).await?;
+                }
+                Ok(false) => {
+                    reply_to_message(bot, msg, "You are not administrator.").await?;
+                }
+                Err(err) => {
+                    reply_to_message(bot, msg, "Failed to set probability.").await?;
+                    log::error!("Failed to get administrators: {:?}", err);
+                }
+            }
+        } else {
+            reply_to_message(&bot, msg, "Probability should between 0 and 1.").await?;
+        }
+    } else {
+        reply_to_message(&bot, msg, "Cannot set probability in Private Chat.").await?;
+    })
 }
