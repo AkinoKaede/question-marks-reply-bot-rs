@@ -12,7 +12,7 @@ mod database;
 
 #[derive(Parser)]
 #[command(name = "question-marks-reply-bot-rs")]
-#[command(version = "0.1.0")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
 #[command(about = "A Telegram bot for reply question marks.", long_about = None)]
 struct Cli {
     #[arg(short, long)]
