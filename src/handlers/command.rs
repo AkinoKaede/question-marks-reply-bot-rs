@@ -1,3 +1,4 @@
+use log::info;
 use teloxide::prelude::*;
 use teloxide::RequestError;
 use teloxide::utils::command::BotCommands;
@@ -28,10 +29,14 @@ pub(crate) async fn command_handler(bot: Bot, msg: Message, cmd: Command) -> Res
 
     match cmd {
         Command::Help => {
+            info!("{} executed /help in {}", msg.from().unwrap().id.0, msg.chat.id.0);
+
             let help_text = Command::descriptions().to_string();
             bot.send_message(msg.chat.id, help_text).await?;
         }
         Command::EnableForMe => {
+            info!("{} executed /enable_for_me in {}", msg.from().unwrap().id.0, msg.chat.id.0);
+
             let user_id = msg.from().unwrap().id.0;
             let user = User::new(db);
             user.set_enabled(user_id, true);
@@ -39,6 +44,8 @@ pub(crate) async fn command_handler(bot: Bot, msg: Message, cmd: Command) -> Res
             reply_to_message(&bot, &msg, "Enabled for you.").await?;
         }
         Command::DisableForMe => {
+            info!("{} executed /disable_for_me in {}", msg.from().unwrap().id.0, msg.chat.id.0);
+
             let user_id = msg.from().unwrap().id.0;
             let user = User::new(db);
             user.set_enabled(user_id, false);
@@ -46,16 +53,24 @@ pub(crate) async fn command_handler(bot: Bot, msg: Message, cmd: Command) -> Res
             reply_to_message(&bot, &msg, "Disabled for you.").await?;
         }
         Command::SetProbabilityForText(probability) => {
+            info!("{} executed /set_probability_for_text {} in {}", msg.from().unwrap().id,
+                probability, msg.chat.id.0);
+
             let chat = Chat::new(db);
             set_probability(&bot, &msg, probability,
                             |p| chat.set_probability_for_text(msg.chat.id.0, p)).await?;
         }
         Command::SetProbabilityForSticker(probability) => {
+            info!("{} executed /set_probability_for_sticker {} in {}", msg.from().unwrap().id,
+                probability, msg.chat.id.0);
+
             let chat = Chat::new(db);
             set_probability(&bot, &msg, probability,
                             |p| chat.set_probability_for_sticker(msg.chat.id.0, p)).await?;
         }
         Command::GetProbabilities => {
+            info!("{} executed /get_probabilities in {}", msg.from().unwrap().id.0, msg.chat.id.0);
+
             let chat = Chat::new(db);
             let probability_for_text = chat.get_probability_for_text(msg.chat.id.0);
             let probability_for_sticker = chat.get_probability_for_sticker(msg.chat.id.0);
