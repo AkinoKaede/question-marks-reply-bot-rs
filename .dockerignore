@@ -1,0 +1,8 @@
+# flyctl launch added from .gitignore
+target
+**/database.sled
+**/Cargo.lock
+**/.idea
+**/.vscode
+
+fly.toml

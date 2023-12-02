@@ -3,3 +3,4 @@ database.sled/
 Cargo.lock
 .idea
 .vscode
+fly.toml
