@@ -10,7 +10,7 @@ use teloxide::types::{MediaKind, MediaSticker, MediaText, MessageCommon, Message
 
 use crate::database::DATABASE;
 use crate::database::user::User;
-use crate::question_mark_reply;
+use crate::question_marks_reply;
 
 pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), RequestError> {
     let db = DATABASE.get().unwrap();
@@ -35,10 +35,10 @@ pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), Reques
                 let probability = chat.get_probability_for_texts(msg.chat.id.0).unwrap_or(1f64);
 
                 if random(msg.id.0, probability).await {
-                    return Ok(question_mark_reply::on_text::on_text(bot, msg).await?);
+                    return Ok(question_marks_reply::on_text::on_text(bot, msg).await?);
                 }
             } else if msg.chat.is_private() {
-                return Ok(question_mark_reply::on_text::on_text(bot, msg).await?);
+                return Ok(question_marks_reply::on_text::on_text(bot, msg).await?);
             }
             Ok(())
         }
@@ -53,10 +53,10 @@ pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), Reques
                 let probability = chat.get_probability_for_stickers(msg.chat.id.0).unwrap_or(1f64);
 
                 if random(msg.id.0, probability).await {
-                    return Ok(question_mark_reply::on_sticker::on_sticker(bot, msg).await?);
+                    return Ok(question_marks_reply::on_sticker::on_sticker(bot, msg).await?);
                 }
             } else if msg.chat.is_private() {
-                return Ok(question_mark_reply::on_sticker::on_sticker(bot, msg).await?);
+                return Ok(question_marks_reply::on_sticker::on_sticker(bot, msg).await?);
             }
             Ok(())
         }

@@ -6,7 +6,7 @@ use teloxide::{prelude::*, update_listeners::webhooks};
 use crate::database::init;
 use crate::handlers::{command, message};
 
-mod question_mark_reply;
+mod question_marks_reply;
 mod handlers;
 mod database;
 

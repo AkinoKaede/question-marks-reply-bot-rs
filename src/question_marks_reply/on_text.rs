@@ -1,7 +1,7 @@
 use teloxide::{Bot, RequestError};
 use teloxide::prelude::*;
 
-use crate::question_mark_reply::{IsComposedOfSameChar, QuestionMarks};
+use crate::question_marks_reply::{IsComposedOfSameChar, QuestionMarks};
 
 pub(crate) async fn on_text(bot: Bot, msg: Message) -> Result<(), RequestError> {
     if let Some(text) = msg.text() {

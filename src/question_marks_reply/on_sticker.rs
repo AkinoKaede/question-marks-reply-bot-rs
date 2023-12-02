@@ -2,7 +2,7 @@ use teloxide::{Bot, RequestError};
 use teloxide::prelude::*;
 use teloxide::types::InputFile;
 
-use crate::question_mark_reply::QUESTION_MARK_EMOJIS;
+use crate::question_marks_reply::QUESTION_MARK_EMOJIS;
 
 pub(crate) async fn on_sticker(bot: Bot, msg: Message) -> Result<(), RequestError> {
     if let Some(sticker) = msg.sticker() {
