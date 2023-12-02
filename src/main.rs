@@ -15,16 +15,16 @@ mod database;
 #[command(version = env!("CARGO_PKG_VERSION"))]
 #[command(about = "A Telegram bot for reply question marks.", long_about = None)]
 struct Cli {
-    #[arg(short, long)]
+    #[arg(short, long, env = "QUESTION_MARKS_REPLY_BOT_RS_TOKEN")]
     token: Option<String>,
 
-    #[arg(short, long)]
+    #[arg(short, long, env = "QUESTION_MARKS_REPLY_BOT_RS_ADDRESS")]
     address: Option<String>,
 
-    #[arg(short, long)]
+    #[arg(short, long, env = "QUESTION_MARKS_REPLY_BOT_RS_URL")]
     url: Option<String>,
 
-    #[arg(short, long)]
+    #[arg(short, long, env = "QUESTION_MARKS_REPLY_BOT_RS_DATA_DIR")]
     data_dir: Option<PathBuf>,
 }
 
