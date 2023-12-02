@@ -43,9 +43,14 @@ async fn main() {
             let xdg_dirs = xdg::BaseDirectories::with_prefix("question-marks-reply-bot-rs")
                 .expect("Failed to get XDG directories");
 
-            xdg_dirs
-                .create_data_directory("database.sled/")
-                .expect("Failed to create configuration directory")
+            match xdg_dirs.find_data_file("database.sled/") {
+                Some(path) => path,
+                None => {
+                    xdg_dirs
+                        .create_data_directory("database.sled/")
+                        .expect("Failed to create configuration directory")
+                }
+            }
         }
     };
 
