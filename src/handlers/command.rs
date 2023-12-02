@@ -17,9 +17,9 @@ pub(crate) enum Command {
     #[command(description = "Disable reply for you.")]
     DisableForMe,
     #[command(description = "Set probability of reply to your text messages.")]
-    SetProbabilityForText(f64),
+    SetProbabilityForTexts(f64),
     #[command(description = "Set probability of reply to your sticker messages.")]
-    SetProbabilityForSticker(f64),
+    SetProbabilityForStickers(f64),
     #[command(description = "Get probabilities of reply to your messages.")]
     GetProbabilities,
 }
@@ -52,28 +52,28 @@ pub(crate) async fn command_handler(bot: Bot, msg: Message, cmd: Command) -> Res
 
             reply_to_message(&bot, &msg, "Disabled for you.").await?;
         }
-        Command::SetProbabilityForText(probability) => {
-            info!("{} executed /set_probability_for_text {} in {}", msg.from().unwrap().id,
+        Command::SetProbabilityForTexts(probability) => {
+            info!("{} executed /set_probability_for_texts {} in {}", msg.from().unwrap().id,
                 probability, msg.chat.id.0);
 
             let chat = Chat::new(db);
             set_probability(&bot, &msg, probability,
-                            |p| chat.set_probability_for_text(msg.chat.id.0, p)).await?;
+                            |p| chat.set_probability_for_texts(msg.chat.id.0, p)).await?;
         }
-        Command::SetProbabilityForSticker(probability) => {
-            info!("{} executed /set_probability_for_sticker {} in {}", msg.from().unwrap().id,
+        Command::SetProbabilityForStickers(probability) => {
+            info!("{} executed /set_probability_for_stickers {} in {}", msg.from().unwrap().id,
                 probability, msg.chat.id.0);
 
             let chat = Chat::new(db);
             set_probability(&bot, &msg, probability,
-                            |p| chat.set_probability_for_sticker(msg.chat.id.0, p)).await?;
+                            |p| chat.set_probability_for_stickers(msg.chat.id.0, p)).await?;
         }
         Command::GetProbabilities => {
             info!("{} executed /get_probabilities in {}", msg.from().unwrap().id.0, msg.chat.id.0);
 
             let chat = Chat::new(db);
-            let probability_for_text = chat.get_probability_for_text(msg.chat.id.0);
-            let probability_for_sticker = chat.get_probability_for_sticker(msg.chat.id.0);
+            let probability_for_text = chat.get_probability_for_texts(msg.chat.id.0);
+            let probability_for_sticker = chat.get_probability_for_stickers(msg.chat.id.0);
 
             let probability_for_text = match probability_for_text {
                 Some(probability) => probability.to_string(),
@@ -85,7 +85,7 @@ pub(crate) async fn command_handler(bot: Bot, msg: Message, cmd: Command) -> Res
                 None => "none (default: 1)".to_string(),
             };
 
-            let text = format!("Probability for text: {}\nProbability for sticker: {}", probability_for_text, probability_for_sticker);
+            let text = format!("Probability for texts: {}\nProbability for stickers: {}", probability_for_text, probability_for_sticker);
             reply_to_message(&bot, &msg, text).await?;
         }
     }
