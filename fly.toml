@@ -25,3 +25,4 @@ primary_region = "ams"
 
 [[env]]
   QUESTION_MARKS_REPLY_BOT_RS_ADDRESS = "[::]:8080"
+  RUST_LOG = "info"
