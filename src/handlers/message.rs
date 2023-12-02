@@ -37,6 +37,8 @@ pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), Reques
                 if random(msg.id.0, probability).await {
                     return Ok(question_mark_reply::on_text::on_text(bot, msg).await?);
                 }
+            } else if msg.chat.is_private() {
+                return Ok(question_mark_reply::on_text::on_text(bot, msg).await?);
             }
             Ok(())
         }
@@ -53,6 +55,8 @@ pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), Reques
                 if random(msg.id.0, probability).await {
                     return Ok(question_mark_reply::on_sticker::on_sticker(bot, msg).await?);
                 }
+            } else if msg.chat.is_private() {
+                return Ok(question_mark_reply::on_sticker::on_sticker(bot, msg).await?);
             }
             Ok(())
         }
