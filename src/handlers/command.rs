@@ -7,7 +7,7 @@ use crate::database::DATABASE;
 use crate::database::user::User;
 
 #[derive(teloxide::macros::BotCommands, Clone)]
-#[command(rename_rule = "lowercase", description = "These commands are supported:")]
+#[command(rename_rule = "snake_case", description = "These commands are supported:")]
 pub(crate) enum Command {
     #[command(description = "Display this text.")]
     Help,
