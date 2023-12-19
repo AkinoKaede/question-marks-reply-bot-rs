@@ -30,16 +30,13 @@ pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), Reques
                 media_kind: MediaKind::Text(MediaText { .. }),
                 ..
             }) => {
-            if msg.chat.is_group() || msg.chat.is_supergroup() {
-                let chat = crate::database::chat::Chat::new(db);
-                let probability = chat.get_probability_for_texts(msg.chat.id.0).unwrap_or(1f64);
+            let chat = crate::database::chat::Chat::new(db);
+            let probability = chat.get_probability_for_texts(msg.chat.id.0).unwrap_or(1f64);
 
-                if random(msg.id.0, probability).await {
-                    return Ok(question_marks_reply::on_text::on_text(bot, msg).await?);
-                }
-            } else if msg.chat.is_private() {
+            if random(msg.id.0, probability).await {
                 return Ok(question_marks_reply::on_text::on_text(bot, msg).await?);
             }
+
             Ok(())
         }
         MessageKind::Common(
@@ -48,14 +45,10 @@ pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), Reques
                 ..
             }
         ) => {
-            if msg.chat.is_group() || msg.chat.is_supergroup() {
-                let chat = crate::database::chat::Chat::new(db);
-                let probability = chat.get_probability_for_stickers(msg.chat.id.0).unwrap_or(1f64);
+            let chat = crate::database::chat::Chat::new(db);
+            let probability = chat.get_probability_for_stickers(msg.chat.id.0).unwrap_or(1f64);
 
-                if random(msg.id.0, probability).await {
-                    return Ok(question_marks_reply::on_sticker::on_sticker(bot, msg).await?);
-                }
-            } else if msg.chat.is_private() {
+            if random(msg.id.0, probability).await {
                 return Ok(question_marks_reply::on_sticker::on_sticker(bot, msg).await?);
             }
             Ok(())
