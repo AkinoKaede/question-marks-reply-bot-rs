@@ -6,7 +6,7 @@ pub(crate) mod on_text;
 pub(crate) mod on_sticker;
 
 lazy_static! {
-    static ref QUESTION_MARKS: HashSet<char> = vec!['?', '¿', '⁇', '︖', '﹖', '？', '？'
+    static ref QUESTION_MARKS: HashSet<char> = vec!['?', '¿', '⁇', '︖', '﹖', '？', '？', '؟'
         , '\u{2753}', '\u{2754}'].into_iter().collect();
 
     static ref QUESTION_MARK_EMOJIS: HashSet<String> = vec!["\u{2753}".to_string()
@@ -40,16 +40,26 @@ impl QuestionMarks for String {
         if self.is_composed_of_question_marks() {
             let question_mark_count = self.chars().filter(|c| *c == '?').count();
             let upside_down_question_mark_count = self.chars().filter(|c| *c == '¿').count();
+            let arabic_question_mark_count = self.chars().filter(|c| *c == '؟').count();
             let text_count = self.chars().count();
 
-            if question_mark_count + upside_down_question_mark_count == text_count
-                && question_mark_count > 0 && upside_down_question_mark_count > 0
-            {
+            if vec![question_mark_count, upside_down_question_mark_count, arabic_question_mark_count].iter()
+                .filter(|&x| x > &0).count() == 2 {
+                let (first_char, second_char) = if question_mark_count + upside_down_question_mark_count == text_count {
+                    ('?', '¿')
+                } else if question_mark_count + arabic_question_mark_count == text_count {
+                    ('?', '؟')
+                } else if upside_down_question_mark_count + arabic_question_mark_count == text_count {
+                    ('¿', '؟')
+                } else {
+                    return None;
+                };
+
                 let res = self.chars().filter_map(
                     |c| {
                         match c {
-                            '?' => Some('¿'),
-                            '¿' => Some('?'),
+                            c if c == first_char => Some(second_char),
+                            c if c == second_char => Some(first_char),
                             _ => None,
                         }
                     }
