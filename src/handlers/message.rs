@@ -15,46 +15,47 @@ use crate::question_marks_reply;
 pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), RequestError> {
     let db = DATABASE.get().unwrap();
 
-    {
-        let user_id = msg.from().unwrap().id.0;
+    if let Some(user_id) = msg.from().map(|u| u.id.0) {
         let user = User::new(db);
         if !user.get_enabled(user_id).unwrap_or(true) {
             return Ok(());
         }
+
+
+        return match msg.kind {
+            MessageKind::Common(
+                MessageCommon {
+                    media_kind: MediaKind::Text(MediaText { .. }),
+                    ..
+                }) => {
+                let chat = crate::database::chat::Chat::new(db);
+                let probability = chat.get_probability_for_texts(msg.chat.id.0).unwrap_or(1f64);
+
+                if random(msg.id.0, probability).await {
+                    return Ok(question_marks_reply::on_text::on_text(bot, msg).await?);
+                }
+
+                Ok(())
+            }
+            MessageKind::Common(
+                MessageCommon {
+                    media_kind: MediaKind::Sticker(MediaSticker { .. }),
+                    ..
+                }
+            ) => {
+                let chat = crate::database::chat::Chat::new(db);
+                let probability = chat.get_probability_for_stickers(msg.chat.id.0).unwrap_or(1f64);
+
+                if random(msg.id.0, probability).await {
+                    return Ok(question_marks_reply::on_sticker::on_sticker(bot, msg).await?);
+                }
+                Ok(())
+            }
+            _ => Ok(()),
+        };
     }
 
-
-    match msg.kind {
-        MessageKind::Common(
-            MessageCommon {
-                media_kind: MediaKind::Text(MediaText { .. }),
-                ..
-            }) => {
-            let chat = crate::database::chat::Chat::new(db);
-            let probability = chat.get_probability_for_texts(msg.chat.id.0).unwrap_or(1f64);
-
-            if random(msg.id.0, probability).await {
-                return Ok(question_marks_reply::on_text::on_text(bot, msg).await?);
-            }
-
-            Ok(())
-        }
-        MessageKind::Common(
-            MessageCommon {
-                media_kind: MediaKind::Sticker(MediaSticker { .. }),
-                ..
-            }
-        ) => {
-            let chat = crate::database::chat::Chat::new(db);
-            let probability = chat.get_probability_for_stickers(msg.chat.id.0).unwrap_or(1f64);
-
-            if random(msg.id.0, probability).await {
-                return Ok(question_marks_reply::on_sticker::on_sticker(bot, msg).await?);
-            }
-            Ok(())
-        }
-        _ => Ok(()),
-    }
+    Ok(())
 }
 
 async fn random(message_id: i32, probability: f64) -> bool {
