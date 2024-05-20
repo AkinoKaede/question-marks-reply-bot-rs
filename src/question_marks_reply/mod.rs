@@ -8,9 +8,6 @@ pub(crate) mod on_sticker;
 lazy_static! {
     static ref QUESTION_MARKS: HashSet<char> = vec!['?', '¿', '⁇', '︖', '﹖', '？', '？', '؟'
         , '\u{2753}', '\u{2754}'].into_iter().collect();
-
-    static ref QUESTION_MARK_EMOJIS: HashSet<String> = vec!["\u{2753}".to_string()
-        , "\u{2754}".to_string()].into_iter().collect();
 }
 
 trait IsQuestionMark {
@@ -28,12 +25,18 @@ trait QuestionMarks
 {
     fn is_composed_of_question_marks(&self) -> bool;
 
+    fn is_contains_question_marks(&self) -> bool;
+
     fn rev(&self) -> Option<Self>;
 }
 
 impl QuestionMarks for String {
     fn is_composed_of_question_marks(&self) -> bool {
         self.chars().all(|c| c.is_question_mark())
+    }
+
+    fn is_contains_question_marks(&self) -> bool {
+        self.chars().any(|c| c.is_question_mark())
     }
 
     fn rev(&self) -> Option<Self> {
