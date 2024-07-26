@@ -1,14 +1,14 @@
+use std::cell::LazyCell;
 use std::collections::HashSet;
-
-use lazy_static::lazy_static;
 
 pub(crate) mod on_text;
 pub(crate) mod on_sticker;
 
-lazy_static! {
-    static ref QUESTION_MARKS: HashSet<char> = vec!['?', '¿', '⁇', '︖', '﹖', '？', '？', '؟'
-        , '\u{2753}', '\u{2754}'].into_iter().collect();
-}
+const QUESTION_MARKS: LazyCell<HashSet<&char>> = LazyCell::new(||{
+    ['?', '¿', '⁇', '︖', '﹖', '？', '？', '؟'
+         , '\u{2753}', '\u{2754}'].iter().collect()
+});
+
 
 trait IsQuestionMark {
     fn is_question_mark(&self) -> bool;
@@ -21,7 +21,8 @@ impl IsQuestionMark for char {
 }
 
 trait QuestionMarks
-    where Self: Sized
+where
+    Self: Sized,
 {
     fn is_composed_of_question_marks(&self) -> bool;
 
