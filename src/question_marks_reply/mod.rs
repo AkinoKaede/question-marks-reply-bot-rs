@@ -5,7 +5,7 @@ pub(crate) mod on_text;
 pub(crate) mod on_sticker;
 
 const QUESTION_MARKS: LazyCell<HashSet<&char>> = LazyCell::new(||{
-    ['?', '¿', '⁇', '︖', '﹖', '？', '？', '؟'
+    ['?', '¿', '⁇', '︖', '﹖', '？', '？', '؟', '՞', '፧', '⍰'
          , '\u{2753}', '\u{2754}'].iter().collect()
 });
 
