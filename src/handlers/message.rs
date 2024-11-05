@@ -2,14 +2,14 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
 
 use rand;
-use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
-use teloxide::{Bot, RequestError};
+use rand::{Rng, SeedableRng};
 use teloxide::prelude::Message;
-use teloxide::types::{MediaKind, MediaSticker, MediaText, MessageCommon, MessageKind};
+use teloxide::types::{MediaKind, MediaPhoto, MediaSticker, MediaText, MessageCommon, MessageKind};
+use teloxide::{Bot, RequestError};
 
-use crate::database::DATABASE;
 use crate::database::user::User;
+use crate::database::DATABASE;
 use crate::question_marks_reply;
 
 pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), RequestError> {
@@ -27,12 +27,22 @@ pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), Reques
                 MessageCommon {
                     media_kind: MediaKind::Text(MediaText { .. }),
                     ..
-                }) => {
+                }) |
+            MessageKind::Common(
+                MessageCommon {
+                    media_kind: MediaKind::Photo(
+                        MediaPhoto {
+                            caption: Some(_),
+                            ..
+                        }),
+                    ..
+                })
+            => {
                 let chat = crate::database::chat::Chat::new(db);
                 let probability = chat.get_probability_for_texts(msg.chat.id.0).unwrap_or(1f64);
 
                 if random(msg.id.0, probability).await {
-                    return Ok(question_marks_reply::on_text::on_text(bot, msg).await?);
+                    return Ok(question_marks_reply::on_text(bot, msg).await?);
                 }
 
                 Ok(())
@@ -47,7 +57,7 @@ pub(crate) async fn message_handler(bot: Bot, msg: Message) -> Result<(), Reques
                 let probability = chat.get_probability_for_stickers(msg.chat.id.0).unwrap_or(1f64);
 
                 if random(msg.id.0, probability).await {
-                    return Ok(question_marks_reply::on_sticker::on_sticker(bot, msg).await?);
+                    return Ok(question_marks_reply::on_sticker(bot, msg).await?);
                 }
                 Ok(())
             }

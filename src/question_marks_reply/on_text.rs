@@ -4,7 +4,7 @@ use teloxide::prelude::*;
 use crate::question_marks_reply::{IsComposedOfSameChar, QuestionMarks};
 
 pub(crate) async fn on_text(bot: Bot, msg: Message) -> Result<(), RequestError> {
-    if let Some(text) = msg.text() {
+    if let Some(text) = msg.text().or(msg.caption()) {
         let text = text.to_string();
         if text.is_composed_of_question_marks() {
 
